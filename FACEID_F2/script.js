@@ -56,18 +56,23 @@ async function start() {
     });
 }
 
-function loadLabeledImages() {
-    const labels = ['Black Widow', 'Captain America', 'Captain Marvel', 'Hawkeye', 'Jim Rhodes', 'Thor', 'Tony Stark']
-    return Promise.all(
-        labels.map(async label => {
-            const descriptions = []
-            for (let i = 1; i <= 2; i++) {
-                const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/WebDevSimplified/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`)
-                const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
-                descriptions.push(detections.descriptor)
-            }
+async function loadLabeledImages() {
+    const labels = ['Rebeca', 'Rodolfo'];
+    const labeledFaceDescriptors = [];
 
-            return new faceapi.LabeledFaceDescriptors(label, descriptions)
-        })
-    )
+    for (const label of labels) {
+        const descriptions = [];
+        for (let i = 1; i <= 2; i++) {
+            const imagePath = `user_photos/${label}/${i}.jpg`; // Caminho da imagem no Firebase Storage
+            const imgRef = firebase.storage().ref().child(imagePath); // Referência para a imagem no Firebase Storage
+            const imgURL = await imgRef.getDownloadURL(); // URL da imagem no Firebase Storage
+            const img = await faceapi.fetchImage(imgURL); // Carrega a imagem usando a URL do Firebase Storage
+            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+            descriptions.push(detections.descriptor);
+        }
+        const labeledFaceDescriptor = new faceapi.LabeledFaceDescriptors(label, descriptions);
+        labeledFaceDescriptors.push(labeledFaceDescriptor);
+    }
+
+    return labeledFaceDescriptors;
 }
