@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login com Reconhecimento Facial</title>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-storage.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        <div class="video-container">
+            <video id="video" width="640" height="480" autoplay></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+        </div>
+        <div class="login-form">
+            <input type="text" id="emailInput" placeholder="Email">
+            <input type="password" id="passwordInput" placeholder="Senha">
+            <button onclick="captureFacePhoto()">Tirar Foto</button>
+            <button onclick="registerUser()">Registrar</button>
+        </div>
+    </div>
+
+    <script>
+
+        
+const firebaseConfig = {
+  apiKey: "AIzaSyCXlREk0UNptt-I7m-lsCzb-RzmTaOWrIo",
+  authDomain: "tag-f2.firebaseapp.com",
+  databaseURL: "https://tag-f2-default-rtdb.firebaseio.com",
+  projectId: "tag-f2",
+  storageBucket: "tag-f2.appspot.com",
+  messagingSenderId: "333008881455",
+  appId: "1:333008881455:web:6b2da1063a9e34631e83da",
+  measurementId: "G-NKTFDD4H0V"
+};
+
+
+        firebase.initializeApp(firebaseConfig);
+
+        var database = firebase.database();
+        var storage = firebase.storage();
+        var storageRef = storage.ref();
+        var auth = firebase.auth();
+
+        // Iniciar a câmera ao carregar a página
+        window.onload = function () {
+            startCamera();
+        };
+
+        // Função para iniciar a câmera
+        function startCamera() {
+            var video = document.getElementById('video');
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.error("Erro ao acessar a câmera:", error);
+                });
+        }
+
+        // Função para capturar a foto do rosto do usuário
+        function captureFacePhoto() {
+            var video = document.getElementById('video');
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Salvar a foto em algum lugar desejado
+            // Exemplo: exibir a foto em um elemento <img>
+            var photoImg = document.getElementById('photoImg');
+           
+        }
+
+        // Função para converter uma URL de dados em um objeto Blob
+        function dataURLtoBlob(dataURL) {
+            var parts = dataURL.split(';base64,');
+            var contentType = parts[0].split(':')[1];
+            var byteCharacters = atob(parts[1]);
+            var byteArrays = [];
+
+            for (var i = 0; i < byteCharacters.length; i++) {
+                byteArrays.push(byteCharacters.charCodeAt(i));
+            }
+
+            var blob = new Blob([new Uint8Array(byteArrays)], { type: contentType });
+            return blob;
+        }
+
+        // Função para realizar o registro do usuário
+        function registerUser() {
+            var email = document.getElementById("emailInput").value;
+            var password = document.getElementById("passwordInput").value;
+
+            // Verificar se o usuário e a senha foram preenchidos
+            if (email && password) {
+                // Capturar a foto do rosto do usuário
+                captureFacePhoto();
+
+                // Obter a referência do armazenamento para salvar a foto
+                var storageRef = storage.ref();
+                var photoRef = storageRef.child("user_photos/" + email + ".png");
+
+                // Obter a URL da foto capturada
+                var canvas = document.getElementById("canvas");
+                var photoDataURL = canvas.toDataURL("image/png");
+
+                // Converter a URL de dados em um objeto Blob
+                var photoBlob = dataURLtoBlob(photoDataURL);
+
+                // Fazer upload da foto para o Firebase Storage
+                photoRef.put(photoBlob)
+                    .then(function (snapshot) {
+                        // Obter a URL da foto após o upload
+                        return snapshot.ref.getDownloadURL();
+                    })
+                    .then(function (photoURL) {
+                        // Criar uma conta de usuário no Firebase Authentication
+                        firebase.auth().createUserWithEmailAndPassword(email, password)
+                            .then(function (userCredential) {
+                                // Obter o ID do usuário recém-criado
+                                var userId = userCredential.user.uid;
+
+                                // Salvar os dados do usuário no Firebase Realtime Database
+                                var userRef = database.ref("users/" + userId);
+                                userRef.set({
+                                    email: email,
+                                    photoURL: photoURL
+                                })
+                                    .then(function () {
+                                        console.log("Usuário registrado com sucesso!");
+                                        // Limpar os campos de entrada
+                                        document.getElementById("emailInput").value = "";
+                                        document.getElementById("passwordInput").value = "";
+                                        // Exibir a foto do usuário
+                                        document.getElementById("photoImg").src = photoURL;
+                                    })
+                                    .catch(function (error) {
+                                        console.error("Erro ao salvar os dados do usuário:", error);
+                                    });
+                            })
+                            .catch(function (error) {
+                                console.error("Erro ao criar uma conta de usuário:", error);
+                            });
+                    })
+                    .catch(function (error) {
+                        console.error("Erro ao fazer upload da foto:", error);
+                    });
+            } else {
+                console.error("Usuário ou senha não preenchidos.");
+            }
+        }
+
+    </script>
+</body>
+</html>

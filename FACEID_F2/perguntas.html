@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Q&A Monitoramento</title>
+    <style>
+        @font-face {
+            font-family: 'VWHead-Bold';
+            src: url('VWHead-Bold.otf') format('truetype');
+            /* Outros formatos de fonte para compatibilidade com diferentes navegadores */
+        }
+        body {
+            background-color: #ffffff;
+            color: black;
+        }
+
+        .lista-container {
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            font-family: VWHead-Bold;
+            font-family: 'VWHead-Bold', sans-serif;
+        }
+
+        .lista-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        .lista-item-selecionado {
+            background-color: black;
+        }
+
+            .lista-item-selecionado p {
+                color: white;
+            }
+
+        #rodape {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background-color: #00ff00;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            margin-left: 0%;
+            margin-right: 10%;
+            font-family: VWHead-Bold;
+            font-family: 'VWHead-Bold', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="lista-container">
+        <ul id="lista-perguntas"></ul>
+    </div>
+
+    <div id="rodape"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script>
+        // Configuração do Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyA_-RkpBn850x8Ro8qqu3alnBy4zsXA_gc",
+            authDomain: "vw-lam-f2.firebaseapp.com",
+            databaseURL: "https://vw-lam-f2-default-rtdb.firebaseio.com",
+            projectId: "vw-lam-f2",
+            storageBucket: "vw-lam-f2.appspot.com",
+            messagingSenderId: "490001136548",
+            appId: "1:490001136548:web:2d7d85a4cdaa8cf702df31",
+            measurementId: "G-8K4MQ73GCX"
+        };
+
+        // Inicializar o app Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Referência para o nó "perguntas" no Firebase Realtime Database
+        var perguntasRef = firebase.database().ref("perguntas");
+
+        // Manipulador de eventos para quando um novo item é adicionado ao nó "perguntas"
+        perguntasRef.on("child_added", function (snapshot) {
+            var pergunta = snapshot.val().pergunta;
+            var nome = snapshot.val().nome;
+
+            // Cria um elemento de lista <li>
+            var listItem = document.createElement("li");
+            listItem.classList.add("lista-item");
+
+            // Cria um elemento de parágrafo <p> para exibir a pergunta e o nome
+            var perguntaNome = document.createElement("p");
+            perguntaNome.innerText = pergunta + " -" + nome;
+
+            // Adiciona o evento de clique para selecionar o item
+            listItem.addEventListener("click", function () {
+                selecionarItem(this);
+            });
+
+            // Adiciona o elemento de parágrafo ao elemento de lista
+            listItem.appendChild(perguntaNome);
+
+            // Adiciona o elemento de lista à lista de perguntas
+            document.getElementById("lista-perguntas").appendChild(listItem);
+        });
+
+        // Função para selecionar o item da lista
+        function selecionarItem(item) {
+            // Remove a classe "lista-item-selecionado" de todos os itens da lista
+            var listaItens = document.getElementsByClassName("lista-item");
+            for (var i = 0; i < listaItens.length; i++) {
+                listaItens[i].classList.remove("lista-item-selecionado");
+            }
+
+            // Adiciona a classe "lista-item-selecionado" ao item selecionado
+            item.classList.add("lista-item-selecionado");
+
+            // Obtém o texto da pergunta e do nome do item selecionado
+            var textoSelecionado = item.innerText;
+
+            // Exibe o texto selecionado no rodapé
+            var rodape = document.getElementById("rodape");
+            rodape.innerText = textoSelecionado;
+        }
+    </script>
+</body>
+</html>
