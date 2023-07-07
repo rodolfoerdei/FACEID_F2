@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+    <script src="https://unpkg.com/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
+    <script src="https://firebasestorage.googleapis.com/v0/b/tag-f2.appspot.com/o/user_photos%2Fface-api.min.js?alt=media&token=b3db5c4d-ccec-45a9-a3c9-1043458c4b24"></script>
+    <script src="https://firebasestorage.googleapis.com/v0/b/tag-f2.appspot.com/o/user_photos%2Fscript.js?alt=media&token=8a9b0869-b05d-4e15-883f-9c2a4fffd911"></script>
+
+
+    <title>Face Recognition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+  <input type="file" id="imageUpload">
+</body>
+</html>
